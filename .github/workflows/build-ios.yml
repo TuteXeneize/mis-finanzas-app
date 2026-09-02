@@ -25,6 +25,7 @@ jobs:
       - name: Compilar Binario con xcodebuild
         run: |
           cd ios/FinanzasApp
+          set -o pipefail
           xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
@@ -34,9 +35,19 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_STYLE=Manual \
-            BUILD_DIR="$(pwd)/build"
+            BUILD_DIR="$(pwd)/build" 2>&1 | tee build.log
+
+      - name: Extraer y Reportar Errores
+        if: failure()
+        run: |
+          cd ios/FinanzasApp
+          echo "### ❌ Primeros errores encontrados:" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          grep -C 3 -i "error:" build.log | head -n 40 >> $GITHUB_STEP_SUMMARY || tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Empaquetar archivo .IPA
+        if: success()
         run: |
           cd ios/FinanzasApp
           APP_PATH=$(find build -name "*.app" -type d | head -n 1)
@@ -56,6 +67,7 @@ jobs:
           echo "IPA generado exitosamente!"
 
       - name: Subir instalador IPA como Artefacto
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: FinanzasApp-Instalador-iOS
