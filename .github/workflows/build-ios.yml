@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-ios:
     name: Compilar IPA de FinanzasApp
@@ -24,36 +27,45 @@ jobs:
           echo "=== 1. Generando Proyecto Xcode con XcodeGen ==="
           xcodegen generate
           
-          echo "=== 2. Compilando Archive sin firma (Release) ==="
+          echo "=== 2. Compilando ==="
           set -o pipefail
-          xcodebuild archive \
+          xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
-            -archivePath unsigned.xcarchive \
             -configuration Release \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_STYLE=Manual 2>&1 | tee build.log
+            CODE_SIGN_STYLE=Manual \
+            BUILD_DIR="$(pwd)/build" 2>&1 | tee build.log
           
-          EXIT_CODE=$?
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "### ❌ Error en xcodebuild:" >> $GITHUB_STEP_SUMMARY
-            echo '```text' >> $GITHUB_STEP_SUMMARY
-            grep -i -E "error:|fatal error:" build.log | head -n 30 >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit $EXIT_CODE
+          BUILD_STATUS=$?
+          
+          echo "=== REPORTE COMPLETO DE LOG ==="
+          cat build.log
+          
+          if [ $BUILD_STATUS -ne 0 ]; then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git checkout -B debug-log
+            cp build.log ../../build-error.txt
+            cd ../..
+            git add build-error.txt
+            git commit -m "Debug log: $BUILD_STATUS"
+            git push -f origin debug-log || true
+            exit $BUILD_STATUS
           fi
           
           echo "=== 3. Empaquetando en archivo .IPA ==="
-          APP_PATH=$(find unsigned.xcarchive -name "*.app" -type d | head -n 1)
-          echo "App encontrada en: $APP_PATH"
-          
+          APP_PATH=$(find build -name "*.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
-            echo "Error: No se encontró el bundle .app dentro del archive"
+            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.app" -type d | head -n 1)
+          fi
+          
+          echo "App encontrada en: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No se encontró .app"
             exit 1
           fi
           
@@ -62,14 +74,8 @@ jobs:
           zip -r -q FinanzasApp.ipa Payload
           echo "IPA generado exitosamente!"
 
-      - name: Subir Log en caso de fallo
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Build-Logs-Error
-          path: ios/FinanzasApp/build.log
-
       - name: Subir instalador IPA como Artefacto
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: FinanzasApp-Instalador-iOS
