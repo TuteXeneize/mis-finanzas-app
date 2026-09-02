@@ -2,6 +2,17 @@ name: FinanzasApp
 options:
   bundleIdPrefix: com.matias.finanzas
 
+settings:
+  base:
+    PRODUCT_NAME: FinanzasApp
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    AD_HOC_CODE_SIGNING_ALLOWED: YES
+    SWIFT_VERSION: "5.9"
+    GENERATE_INFOPLIST_FILE: YES
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: "1.0.0"
+
 targets:
   FinanzasApp:
     type: application
@@ -14,12 +25,11 @@ targets:
       - Views
       - Helpers
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.matias.finanzas.FinanzasApp
-      INFOPLIST_KEY_CFBundleDisplayName: "Mis Finanzas"
-      INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
-      INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
-      INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads: "YES"
-      CODE_SIGNING_ALLOWED: "NO"
-      CODE_SIGNING_REQUIRED: "NO"
-      CODE_SIGN_IDENTITY: ""
-      DEVELOPMENT_TEAM: ""
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.matias.finanzas.FinanzasApp
+        INFOPLIST_KEY_CFBundleDisplayName: "Mis Finanzas"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
+        INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads: "YES"
+        CODE_SIGN_IDENTITY: "-"
+        AD_HOC_CODE_SIGNING_ALLOWED: YES

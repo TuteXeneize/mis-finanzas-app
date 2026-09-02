@@ -26,16 +26,17 @@ jobs:
         run: |
           cd ios/FinanzasApp
           set +e
-          xcodebuild \
+          xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
             -configuration Release \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            build > build.log 2>&1
+            DEVELOPMENT_TEAM="" \
+            BUILD_DIR="$(pwd)/build" > build.log 2>&1
           
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
@@ -52,9 +53,9 @@ jobs:
       - name: Empaquetar en archivo .IPA
         run: |
           cd ios/FinanzasApp
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "FinanzasApp.app" -type d | head -n 1)
+          APP_PATH=$(find build -name "FinanzasApp.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find . -name "FinanzasApp.app" -type d | head -n 1)
+            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "FinanzasApp.app" -type d | head -n 1)
           fi
           echo "App encontrada en: $APP_PATH"
           mkdir -p Payload
