@@ -157,7 +157,6 @@ extension DashboardView {
     
     private func filaTransaccion(_ tx: Transaccion) -> some View {
         HStack(spacing: 12) {
-            // Icono según método de pago o tipo
             Image(systemName: tx.tipo == .ingreso ? "arrow.down.circle.fill" : tx.metodoPago.icono)
                 .font(.title3)
                 .foregroundStyle(tx.tipo == .ingreso ? .green : .blue)
@@ -284,14 +283,14 @@ extension DashboardView {
                     estaProcesandoIA = false
                     
                     if respuesta.estado == "ok", let txDTO = respuesta.transaccion {
-                        // Insertar en la base de datos local
                         let catUUID = txDTO.categoria_id.flatMap { UUID(uuidString: $0) }
                         let fechaTx = AppFormatters.parsearFechaDelBackend(txDTO.fecha)
                         let tipoTx = TipoTransaccion(rawValue: txDTO.tipo) ?? .gasto
                         let metodoTx = MetodoPago(rawValue: txDTO.metodo_pago) ?? .noEspecificado
+                        let montoFinal = NSDecimalNumber(value: txDTO.monto).decimalValue
                         
                         let nuevaTransaccion = Transaccion(
-                            monto: Decimal(txDTO.monto),
+                            monto: montoFinal,
                             descripcion: txDTO.descripcion,
                             tipo: tipoTx,
                             categoriaID: catUUID,
@@ -306,7 +305,6 @@ extension DashboardView {
                             feedbackExito = "Registrado: \(txDTO.descripcion) - $\(String(format: "%.2f", txDTO.monto))"
                         }
                         
-                        // Quitar el feedback luego de 3 segundos
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                             withAnimation {
                                 feedbackExito = nil
