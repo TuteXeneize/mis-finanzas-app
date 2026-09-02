@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Mis Finanzas</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#f2f2f7" />
+  <!-- Tailwind CSS & Chart.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f2f2f7;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 16px);
+    }
+    .ios-blur {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  </style>
+</head>
+<body class="text-slate-900 flex flex-col h-screen overflow-hidden">
+
+  <!-- Header -->
+  <header class="safe-top bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+        $
+      </div>
+      <h1 class="text-lg font-bold tracking-tight" id="headerTitle">Mis Finanzas</h1>
+    </div>
+    <button onclick="abrirModalManual()" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-y-auto px-4 py-4 pb-28" id="mainContainer">
+
+    <!-- Vista 1: DASHBOARD -->
+    <div id="viewDashboard" class="space-y-4">
+      <!-- Balance Total Card -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Balance Total</span>
+        <div id="balanceTotal" class="text-3xl font-extrabold tracking-tight text-slate-800">$0,00</div>
+      </div>
+
+      <!-- Ingresos & Gastos Cards -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium">Ingresos</div>
+            <div id="totalIngresos" class="text-sm font-bold text-slate-800">$0,00</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+            <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium">Gastos</div>
+            <div id="totalGastos" class="text-sm font-bold text-slate-800">$0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner de Notificación IA -->
+      <div id="aiBanner" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs flex items-center space-x-2 animate-fade-in">
+        <i data-lucide="check-circle" class="w-4 h-4 shrink-0 text-emerald-600"></i>
+        <span id="aiBannerText" class="font-medium"></span>
+      </div>
+
+      <!-- Lista de Movimientos Recientes -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider text-xs">Movimientos Recientes</h2>
+          <span id="countTransacciones" class="text-xs text-slate-400 font-medium">0 transacciones</span>
+        </div>
+        <div id="listaTransacciones" class="divide-y divide-slate-100">
+          <!-- Items generados dinámicamente -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 2: ESTADÍSTICAS -->
+    <div id="viewEstadisticas" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 text-center">Distribución de Gastos</h2>
+        <div class="w-full max-w-[240px] mx-auto relative">
+          <canvas id="chartCategorias" width="240" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Detalle por Categoría</h3>
+        <div id="listaStatsCategorias" class="divide-y divide-slate-100">
+          <!-- Lista de estadísticas -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 3: CATEGORÍAS -->
+    <div id="viewCategorias" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Nueva Categoría</h2>
+        <div class="flex space-x-2">
+          <input type="text" id="inputNuevaCategoria" placeholder="Ej: Mascotas, Gimnasio..." class="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500" />
+          <button onclick="agregarCategoria()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition">Agregar</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Categorías Activas</h3>
+        <div id="listaCategorias" class="divide-y divide-slate-100">
+          <!-- Categorías generadas -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Input Flotante de IA en la parte inferior del Dashboard -->
+  <div id="aiInputBar" class="fixed bottom-16 left-0 right-0 p-3 bg-gradient-to-t from-[#f2f2f7] via-[#f2f2f7]/90 to-transparent z-20">
+    <div class="max-w-md mx-auto flex items-center space-x-2 bg-white rounded-full p-1.5 pl-4 shadow-lg border border-slate-200">
+      <input type="text" id="inputTextoIA" placeholder="Ej: Gasté 15 lucas en súper con débito..." class="flex-1 text-sm bg-transparent focus:outline-none text-slate-800" onkeydown="if(event.key==='Enter') procesarIA()" />
+      <button onclick="procesarIA()" id="btnIA" class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 hover:bg-blue-700 transition shadow-sm">
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar (iOS Style) -->
+  <nav class="safe-bottom fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-slate-200 flex justify-around py-2 z-30">
+    <button onclick="cambiarTab('dashboard')" id="tabBtnDashboard" class="flex flex-col items-center text-blue-600">
+      <i data-lucide="wallet" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold mt-1">Dashboard</span>
+    </button>
+    <button onclick="cambiarTab('estadisticas')" id="tabBtnEstadisticas" class="flex flex-col items-center text-slate-400">
+      <i data-lucide="pie-chart" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold mt-1">Estadísticas</span>
+    </button>
+    <button onclick="cambiarTab('categorias')" id="tabBtnCategorias" class="flex flex-col items-center text-slate-400">
+      <i data-lucide="tag" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold mt-1">Categorías</span>
+    </button>
+  </nav>
+
+  <!-- Modal Carga Manual -->
+  <div id="modalManual" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md p-5 space-y-4 animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-800">Nueva Transacción</h3>
+        <button onclick="cerrarModalManual()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+        <button onclick="setTipoModal('gasto')" id="btnTipoGasto" class="py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-sm transition">Gasto</button>
+        <button onclick="setTipoModal('ingreso')" id="btnTipoIngreso" class="py-1.5 rounded-lg text-xs font-bold text-slate-500 transition">Ingreso</button>
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-400 uppercase">Monto</label>
+        <div class="flex items-center space-x-2 border border-slate-200 rounded-xl px-3 py-2 mt-1 focus-within:border-blue-500">
+          <span class="text-slate-400 font-bold">$</span>
+          <input type="number" id="modalMonto" placeholder="15000" class="flex-1 text-base font-bold focus:outline-none" />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-400 uppercase">Descripción</label>
+        <input type="text" id="modalDescripcion" placeholder="Ej: Pizza de muzzarella" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500" />
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-400 uppercase">Categoría</label>
+        <select id="modalCategoria" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm mt-1 bg-white focus:outline-none focus:border-blue-500">
+          <!-- Opciones dinámicas -->
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs font-bold text-slate-400 uppercase">Método de Pago</label>
+        <select id="modalMetodoPago" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm mt-1 bg-white focus:outline-none focus:border-blue-500">
+          <option value="debito">Débito</option>
+          <option value="credito">Crédito</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="mercado_pago">Mercado Pago</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="no_especificado">No Especificado</option>
+        </select>
+      </div>
+
+      <button onclick="guardarTransaccionManual()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Guardar Transacción</button>
+    </div>
+  </div>
+
+  <script>
+    // --- ESTADO LOCAL & DATOS ---
+    let categorias = JSON.parse(localStorage.getItem('finanzas_categorias')) || [
+      { id: '1', nombre: 'Supermercado', activa: true },
+      { id: '2', nombre: 'Comida & Salidas', activa: true },
+      { id: '3', nombre: 'Servicios & Impuestos', activa: true },
+      { id: '4', nombre: 'Transporte', activa: true },
+      { id: '5', nombre: 'Salud', activa: true },
+      { id: '6', nombre: 'Sueldo', activa: true }
+    ];
+
+    let transacciones = JSON.parse(localStorage.getItem('finanzas_transacciones')) || [];
+    let tipoModalActual = 'gasto';
+    let chartInstance = null;
+
+    function guardarDatos() {
+      localStorage.setItem('finanzas_categorias', JSON.stringify(categorias));
+      localStorage.setItem('finanzas_transacciones', JSON.stringify(transacciones));
+      render();
+    }
+
+    // --- FORMATEO ---
+    function formatearDinero(num) {
+      return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(num);
+    }
+
+    // --- NAVEGACIÓN ---
+    function cambiarTab(tab) {
+      document.getElementById('viewDashboard').classList.add('hidden');
+      document.getElementById('viewEstadisticas').classList.add('hidden');
+      document.getElementById('viewCategorias').classList.add('hidden');
+      document.getElementById('aiInputBar').classList.toggle('hidden', tab !== 'dashboard');
+
+      document.getElementById('tabBtnDashboard').className = 'flex flex-col items-center text-slate-400';
+      document.getElementById('tabBtnEstadisticas').className = 'flex flex-col items-center text-slate-400';
+      document.getElementById('tabBtnCategorias').className = 'flex flex-col items-center text-slate-400';
+
+      if (tab === 'dashboard') {
+        document.getElementById('viewDashboard').classList.remove('hidden');
+        document.getElementById('tabBtnDashboard').className = 'flex flex-col items-center text-blue-600';
+        document.getElementById('headerTitle').innerText = 'Mis Finanzas';
+      } else if (tab === 'estadisticas') {
+        document.getElementById('viewEstadisticas').classList.remove('hidden');
+        document.getElementById('tabBtnEstadisticas').className = 'flex flex-col items-center text-blue-600';
+        document.getElementById('headerTitle').innerText = 'Estadísticas';
+        renderGrafico();
+      } else if (tab === 'categorias') {
+        document.getElementById('viewCategorias').classList.remove('hidden');
+        document.getElementById('tabBtnCategorias').className = 'flex flex-col items-center text-blue-600';
+        document.getElementById('headerTitle').innerText = 'Categorías';
+      }
+      lucide.createIcons();
+    }
+
+    // --- MODAL MANUAL ---
+    function abrirModalManual() {
+      document.getElementById('modalMonto').value = '';
+      document.getElementById('modalDescripcion').value = '';
+      
+      const selectCat = document.getElementById('modalCategoria');
+      selectCat.innerHTML = '<option value="">Sin categoría</option>';
+      categorias.filter(c => c.activa).forEach(c => {
+        selectCat.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+      });
+
+      document.getElementById('modalManual').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function cerrarModalManual() {
+      document.getElementById('modalManual').classList.add('hidden');
+    }
+
+    function setTipoModal(tipo) {
+      tipoModalActual = tipo;
+      if (tipo === 'gasto') {
+        document.getElementById('btnTipoGasto').className = 'py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-sm transition';
+        document.getElementById('btnTipoIngreso').className = 'py-1.5 rounded-lg text-xs font-bold text-slate-500 transition';
+      } else {
+        document.getElementById('btnTipoGasto').className = 'py-1.5 rounded-lg text-xs font-bold text-slate-500 transition';
+        document.getElementById('btnTipoIngreso').className = 'py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-sm transition';
+      }
+    }
+
+    function guardarTransaccionManual() {
+      const monto = parseFloat(document.getElementById('modalMonto').value);
+      const desc = document.getElementById('modalDescripcion').value.trim();
+      const catId = document.getElementById('modalCategoria').value || null;
+      const metodo = document.getElementById('modalMetodoPago').value;
+
+      if (!monto || monto <= 0 || !desc) {
+        alert('Por favor ingresá un monto válido y una descripción.');
+        return;
+      }
+
+      transacciones.unshift({
+        id: Date.now().toString(),
+        monto: monto,
+        descripcion: desc,
+        tipo: tipoModalActual,
+        categoria_id: catId,
+        metodo_pago: metodo,
+        fecha: new Date().toISOString().split('T')[0]
+      });
+
+      guardarDatos();
+      cerrarModalManual();
+    }
+
+    // --- PROCESAMIENTO DE IA (FastAPI) ---
+    async function procesarIA() {
+      const input = document.getElementById('inputTextoIA');
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const btn = document.getElementById('btnIA');
+      btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          texto: texto,
+          fecha_actual: new Date().toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Argentina/Buenos_Aires',
+          categorias: categorias.filter(c => c.activa).map(c => ({ id: c.id, nombre: c.nombre }))
+        };
+
+        const res = await fetch('/procesar-transaccion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer token_secreto_temporal_mvp'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.estado === 'ok' && data.transaccion) {
+          transacciones.unshift({
+            id: Date.now().toString(),
+            ...data.transaccion
+          });
+          guardarDatos();
+          mostrarBanner(`Registrado: ${data.transaccion.descripcion} (${formatearDinero(data.transaccion.monto)})`);
+          input.value = '';
+        } else if (data.mensaje_aclaratorio) {
+          alert(data.mensaje_aclaratorio);
+        } else {
+          alert('No se pudo procesar como una transacción.');
+        }
+      } catch (err) {
+        alert('Error conectando con el servidor.');
+      } finally {
+        btn.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4"></i>';
+        btn.disabled = false;
+        lucide.createIcons();
+      }
+    }
+
+    function mostrarBanner(mensaje) {
+      const b = document.getElementById('aiBanner');
+      document.getElementById('aiBannerText').innerText = mensaje;
+      b.classList.remove('hidden');
+      setTimeout(() => b.classList.add('hidden'), 4000);
+    }
+
+    // --- CATEGORÍAS ---
+    function agregarCategoria() {
+      const inp = document.getElementById('inputNuevaCategoria');
+      const nombre = inp.value.trim();
+      if (!nombre) return;
+      categorias.push({ id: Date.now().toString(), nombre: nombre, activa: true });
+      inp.value = '';
+      guardarDatos();
+    }
+
+    function desactivarCategoria(id) {
+      const c = categorias.find(x => x.id === id);
+      if (c) {
+        c.activa = false;
+        guardarDatos();
+      }
+    }
+
+    function borrarTransaccion(id) {
+      transacciones = transacciones.filter(t => t.id !== id);
+      guardarDatos();
+    }
+
+    // --- RENDERIZADO GENERAL ---
+    function render() {
+      // 1. Cálculos matemáticos
+      const totalIngresos = transacciones.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + t.monto, 0);
+      const totalGastos = transacciones.filter(t => t.tipo === 'gasto').reduce((acc, t) => acc + t.monto, 0);
+      const balance = totalIngresos - totalGastos;
+
+      document.getElementById('balanceTotal').innerText = formatearDinero(balance);
+      document.getElementById('balanceTotal').className = `text-3xl font-extrabold tracking-tight ${balance >= 0 ? 'text-slate-800' : 'text-rose-600'}`;
+      document.getElementById('totalIngresos').innerText = formatearDinero(totalIngresos);
+      document.getElementById('totalGastos').innerText = formatearDinero(totalGastos);
+      document.getElementById('countTransacciones').innerText = `${transacciones.length} movimientos`;
+
+      // 2. Lista de transacciones
+      const listaTx = document.getElementById('listaTransacciones');
+      if (transacciones.length === 0) {
+        listaTx.innerHTML = '<div class="py-8 text-center text-xs text-slate-400 italic">No hay transacciones todavía. Escribí un gasto abajo.</div>';
+      } else {
+        listaTx.innerHTML = transacciones.map(t => {
+          const cat = categorias.find(c => c.id === t.categoria_id);
+          const catNombre = cat ? cat.nombre : 'Sin categoría';
+          const esIngreso = t.tipo === 'ingreso';
+          return `
+            <div class="py-3 flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full ${esIngreso ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'} flex items-center justify-center shrink-0 text-xs">
+                  <i data-lucide="${esIngreso ? 'arrow-down-left' : 'shopping-bag'}" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">${t.descripcion}</div>
+                  <div class="text-[11px] text-slate-400">${catNombre} • ${t.fecha}</div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-bold ${esIngreso ? 'text-emerald-600' : 'text-slate-800'}">${esIngreso ? '+' : '-'}${formatearDinero(t.monto)}</span>
+                <button onclick="borrarTransaccion('${t.id}')" class="text-slate-300 hover:text-rose-500 p-1">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Lista de categorías
+      const listaCat = document.getElementById('listaCategorias');
+      const catsActivas = categorias.filter(c => c.activa);
+      if (catsActivas.length === 0) {
+        listaCat.innerHTML = '<div class="py-4 text-center text-xs text-slate-400">Sin categorías activas</div>';
+      } else {
+        listaCat.innerHTML = catsActivas.map(c => `
+          <div class="py-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="tag" class="w-4 h-4 text-blue-500"></i>
+              <span class="text-sm font-medium text-slate-700">${c.nombre}</span>
+            </div>
+            <button onclick="desactivarCategoria('${c.id}')" class="text-xs text-rose-500 font-medium hover:underline">Desactivar</button>
+          </div>
+        `).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- GRÁFICO SWIFT CHARTS STYLE ---
+    function renderGrafico() {
+      const gastos = transacciones.filter(t => t.tipo === 'gasto');
+      const agrupados = {};
+      gastos.forEach(g => {
+        const cat = categorias.find(c => c.id === g.categoria_id);
+        const nom = cat ? cat.nombre : 'Sin categoría';
+        agrupados[nom] = (agrupados[nom] || 0) + g.monto;
+      });
+
+      const labels = Object.keys(agrupados);
+      const data = Object.values(agrupados);
+      const totalGastos = data.reduce((a, b) => a + b, 0);
+
+      // Render stats list
+      const statsList = document.getElementById('listaStatsCategorias');
+      if (labels.length === 0) {
+        statsList.innerHTML = '<div class="py-4 text-center text-xs text-slate-400">No hay gastos para graficar.</div>';
+      } else {
+        statsList.innerHTML = labels.map((l, i) => {
+          const porc = totalGastos > 0 ? ((data[i] / totalGastos) * 100).toFixed(0) : 0;
+          return `
+            <div class="py-2 flex items-center justify-between">
+              <span class="text-xs font-medium text-slate-700">${l}</span>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">${porc}%</span>
+                <span class="text-xs font-bold text-slate-800">${formatearDinero(data[i])}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const ctx = document.getElementById('chartCategorias').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      if (labels.length > 0) {
+        chartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            cutout: '65%',
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+    }
+
+    // Inicializar
+    render();
+  </script>
+</body>
+</html>

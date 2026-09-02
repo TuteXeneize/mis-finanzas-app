@@ -1,0 +1,52 @@
+name: Compilar App Nativa iOS (.IPA)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # Permite compilar manualmente con un clic en GitHub
+
+jobs:
+  build-ios:
+    name: Compilar IPA de FinanzasApp
+    runs-on: macos-14
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar XcodeGen
+        run: |
+          brew install xcodegen
+
+      - name: Generar Proyecto de Xcode
+        working-directory: ios/FinanzasApp
+        run: |
+          xcodegen generate
+
+      - name: Compilar App (.app)
+        working-directory: ios/FinanzasApp
+        run: |
+          xcodebuild build \
+            -project FinanzasApp.xcodeproj \
+            -scheme FinanzasApp \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            BUILD_DIR=build
+
+      - name: Empaquetar en archivo .IPA
+        working-directory: ios/FinanzasApp
+        run: |
+          mkdir -p Payload
+          cp -r build/Release-iphoneos/FinanzasApp.app Payload/
+          zip -r FinanzasApp.ipa Payload
+          echo "IPA generado exitosamente!"
+
+      - name: Subir instalador IPA como Artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: FinanzasApp-Instalador-iOS
+          path: ios/FinanzasApp/FinanzasApp.ipa
+          retention-days: 30
