@@ -21,34 +21,53 @@ jobs:
         run: |
           cd ios/FinanzasApp
           
-          echo "=== 1. Generando Proyecto con XcodeGen ==="
+          echo "=== 1. Generando Proyecto Xcode con XcodeGen ==="
           xcodegen generate
           
-          echo "=== 2. Compilando Binario con Firma Ad-Hoc ==="
-          xcodebuild build \
+          echo "=== 2. Compilando Archive sin firma (Release) ==="
+          set -o pipefail
+          xcodebuild archive \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
+            -archivePath unsigned.xcarchive \
             -configuration Release \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="-" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="" \
-            BUILD_DIR="$(pwd)/build"
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual 2>&1 | tee build.log
           
-          echo "=== 3. Empaquetando en archivo .IPA ==="
-          APP_PATH=$(find build -name "FinanzasApp.app" -type d | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "FinanzasApp.app" -type d | head -n 1)
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "### ❌ Error en xcodebuild:" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            grep -i -E "error:|fatal error:" build.log | head -n 30 >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit $EXIT_CODE
           fi
           
+          echo "=== 3. Empaquetando en archivo .IPA ==="
+          APP_PATH=$(find unsigned.xcarchive -name "*.app" -type d | head -n 1)
           echo "App encontrada en: $APP_PATH"
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No se encontró el bundle .app dentro del archive"
+            exit 1
+          fi
+          
           mkdir -p Payload
           cp -R "$APP_PATH" Payload/
           zip -r -q FinanzasApp.ipa Payload
           echo "IPA generado exitosamente!"
+
+      - name: Subir Log en caso de fallo
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Logs-Error
+          path: ios/FinanzasApp/build.log
 
       - name: Subir instalador IPA como Artefacto
         uses: actions/upload-artifact@v4
