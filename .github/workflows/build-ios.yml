@@ -25,6 +25,7 @@ jobs:
       - name: Compilar App (.app)
         run: |
           cd ios/FinanzasApp
+          set +e
           xcodebuild \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
@@ -34,7 +35,19 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            build
+            build > build.log 2>&1
+          
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "### ❌ Detalle del Error de Compilación" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            grep -E "error:|fatal error:" build.log | head -n 30 >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat build.log
+            exit $EXIT_CODE
+          fi
 
       - name: Empaquetar en archivo .IPA
         run: |
