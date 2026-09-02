@@ -25,30 +25,25 @@ jobs:
       - name: Compilar App (.app)
         run: |
           cd ios/FinanzasApp
-          set +e
           xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
             -configuration Release \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
             PROVISIONING_PROFILE_SPECIFIER="" \
             DEVELOPMENT_TEAM="" \
-            BUILD_DIR="$(pwd)/build" > build.log 2>&1
-          
-          EXIT_CODE=$?
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "### ❌ Detalle del Error de Compilación" >> $GITHUB_STEP_SUMMARY
-            echo '```text' >> $GITHUB_STEP_SUMMARY
-            grep -E "error:|fatal error:" build.log | head -n 30 >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat build.log
-            exit $EXIT_CODE
-          fi
+            BUILD_DIR="$(pwd)/build" 2>&1 | tee build.log
+
+      - name: Subir Log de Compilación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Logs
+          path: ios/FinanzasApp/build.log
 
       - name: Empaquetar en archivo .IPA
         run: |
