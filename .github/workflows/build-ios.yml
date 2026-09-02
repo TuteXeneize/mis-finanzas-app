@@ -43,15 +43,17 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="" 2>&1 | tee build.log
+            DEVELOPMENT_TEAM=""
 
       - name: Empaquetar archivo .IPA
         run: |
           cd ios/FinanzasApp
+          APP_DIR=$(find build/FinanzasApp.xcarchive -name "*.app" -type d | head -n 1)
+          echo "===> Copiando app encontrada en: $APP_DIR"
           mkdir -p Payload
-          cp -R "build/FinanzasApp.xcarchive/Products/Applications/FinanzasApp.app" Payload/
+          cp -R "$APP_DIR" Payload/
           zip -r -q FinanzasApp.ipa Payload
-          echo "IPA generado con éxito!"
+          echo "IPA generado exitosamente!"
 
       - name: Subir instalador IPA como Artefacto
         uses: actions/upload-artifact@v4
