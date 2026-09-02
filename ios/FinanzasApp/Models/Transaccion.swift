@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Transaccion {
+final class Transaccion: Equatable, Identifiable {
     @Attribute(.unique) var id: UUID
     var monto: Decimal
     var descripcion: String
@@ -45,5 +45,9 @@ final class Transaccion {
         self.fecha = fecha
         self.moneda = moneda
         self.fechaRegistro = fechaRegistro
+    }
+    
+    static func == (lhs: Transaccion, rhs: Transaccion) -> Bool {
+        lhs.id == rhs.id
     }
 }

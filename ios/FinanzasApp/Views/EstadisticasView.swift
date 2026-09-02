@@ -3,10 +3,14 @@ import SwiftData
 import Charts
 
 // MARK: - Estructura Auxiliar para el Gráfico
-struct GastoPorCategoria: Identifiable {
+struct GastoPorCategoria: Identifiable, Equatable {
     let id = UUID()
     let nombreCategoria: String
-    let montoTotal: Double // Swift Charts renderiza con Double; convertimos Decimal solo para dibujar
+    let montoTotal: Double
+    
+    static func == (lhs: GastoPorCategoria, rhs: GastoPorCategoria) -> Bool {
+        lhs.nombreCategoria == rhs.nombreCategoria && lhs.montoTotal == rhs.montoTotal
+    }
 }
 
 struct EstadisticasView: View {
@@ -35,15 +39,14 @@ struct EstadisticasView: View {
                             Chart(datosGrafico) { dato in
                                 SectorMark(
                                     angle: .value("Total Gastado", dato.montoTotal),
-                                    innerRadius: .ratio(0.55), // Gráfico de Dona moderno
-                                    angularInset: 2.0 // Separación visual entre porciones
+                                    innerRadius: .ratio(0.55),
+                                    angularInset: 2.0
                                 )
                                 .cornerRadius(6)
                                 .foregroundStyle(by: .value("Categoría", dato.nombreCategoria))
                                 .annotation(position: .overlay) {
-                                    let porcentaje = calcularPorcentaje(de: dato.montoTotal)
-                                    if porcentaje >= 5 {
-                                        Text(String(format: "%.0f%%", porcentaje))
+                                    if calcularPorcentaje(de: dato.montoTotal) >= 5.0 {
+                                        Text(String(format: "%.0f%%", calcularPorcentaje(de: dato.montoTotal)))
                                             .font(.caption2)
                                             .bold()
                                             .foregroundColor(.white)
@@ -93,7 +96,7 @@ struct EstadisticasView: View {
             }
             .navigationTitle("Estadísticas")
             .onAppear(perform: procesarDatos)
-            .onChange(of: transacciones) {
+            .onChange(of: transacciones.count) { _, _ in
                 procesarDatos()
             }
         }
@@ -115,7 +118,6 @@ extension EstadisticasView {
         // 3. Convertimos el diccionario al array ordenado que necesita Swift Charts
         datosGrafico = sumaPorCategoria.map { (idCategoria, sumaDecimal) in
             let nombre = nombreCategoria(para: idCategoria)
-            // Convertimos Decimal a Double EXCLUSIVAMENTE para la vista del gráfico
             let sumaDouble = NSDecimalNumber(decimal: sumaDecimal).doubleValue
             return GastoPorCategoria(nombreCategoria: nombre, montoTotal: sumaDouble)
         }.sorted { $0.montoTotal > $1.montoTotal }

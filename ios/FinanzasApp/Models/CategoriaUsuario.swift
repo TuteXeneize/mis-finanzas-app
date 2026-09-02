@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class CategoriaUsuario {
+final class CategoriaUsuario: Equatable, Identifiable {
     @Attribute(.unique) var id: UUID
     var nombre: String
     var activa: Bool
@@ -24,5 +24,9 @@ final class CategoriaUsuario {
         self.colorHex = colorHex
         self.icono = icono
         self.fechaCreacion = fechaCreacion
+    }
+    
+    static func == (lhs: CategoriaUsuario, rhs: CategoriaUsuario) -> Bool {
+        lhs.id == rhs.id
     }
 }
