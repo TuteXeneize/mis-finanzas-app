@@ -108,7 +108,7 @@ final class IAService {
         
         // 6. Decodificar respuesta
         do {
-            let respuesta = try JSONDecoder().decode(RespuestaAPIDTO.self, data: data)
+            let respuesta = try JSONDecoder().decode(RespuestaAPIDTO.self, from: data)
             return respuesta
         } catch {
             throw IANetworkError.decodificacionFallida(error.localizedDescription)

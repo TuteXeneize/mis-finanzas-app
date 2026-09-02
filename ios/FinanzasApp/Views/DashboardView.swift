@@ -107,7 +107,7 @@ extension DashboardView {
                     .foregroundStyle(.secondary)
                 Text(AppFormatters.formatearDinero(balanceTotal))
                     .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundStyle(balanceTotal >= 0 ? .primary : .red)
+                    .foregroundStyle(balanceTotal >= 0 ? Color.primary : Color.red)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)

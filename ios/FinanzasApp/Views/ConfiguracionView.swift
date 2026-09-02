@@ -92,7 +92,7 @@ struct ConfiguracionView: View {
             }
             
             do {
-                let (data, response) = try await URLSession.shared.data(from: url)
+                let (_, response) = try await URLSession.shared.data(from: url)
                 if let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200 {
                     await MainActor.run {
                         probandoConexion = false
