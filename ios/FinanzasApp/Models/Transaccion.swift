@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Transaccion {
+final class Transaccion: Identifiable {
     @Attribute(.unique) var id: UUID
     var monto: Decimal
     var descripcion: String

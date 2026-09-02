@@ -13,22 +13,31 @@ targets:
       - Services
       - Views
       - Helpers
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: "Mis Finanzas"
+        CFBundleIdentifier: "com.matias.finanzas.FinanzasApp"
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
     scheme:
       environmentVariables: {}
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.matias.finanzas.FinanzasApp
-      PRODUCT_NAME: FinanzasApp
-      INFOPLIST_KEY_CFBundleDisplayName: "Mis Finanzas"
-      INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
-      INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
-      INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads: "YES"
-      GENERATE_INFOPLIST_FILE: "YES"
-      ASSETCATALOG_COMPILER_APPICON_NAME: ""
-      ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
-      CODE_SIGNING_ALLOWED: "NO"
-      CODE_SIGNING_REQUIRED: "NO"
-      CODE_SIGN_IDENTITY: ""
-      CODE_SIGN_STYLE: "Manual"
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.matias.finanzas.FinanzasApp
+        PRODUCT_NAME: FinanzasApp
+        SWIFT_VERSION: "5.9"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGN_STYLE: "Manual"
+        PROVISIONING_PROFILE_SPECIFIER: ""
+        DEVELOPMENT_TEAM: ""
 
 schemes:
   FinanzasApp:

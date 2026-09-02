@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class CategoriaUsuario {
+final class CategoriaUsuario: Identifiable {
     @Attribute(.unique) var id: UUID
     var nombre: String
     var activa: Bool

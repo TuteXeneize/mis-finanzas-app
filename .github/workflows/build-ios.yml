@@ -29,7 +29,7 @@ jobs:
           xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
-            -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
             -configuration Release \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
