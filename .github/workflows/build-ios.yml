@@ -24,15 +24,18 @@ jobs:
           echo "=== 1. Generando Proyecto con XcodeGen ==="
           xcodegen generate
           
-          echo "=== 2. Compilando Binario de iOS en Xcode 16 ==="
+          echo "=== 2. Compilando Binario con Firma Ad-Hoc ==="
           xcodebuild build \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
             -configuration Release \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
             BUILD_DIR="$(pwd)/build"
           
           echo "=== 3. Empaquetando en archivo .IPA ==="
