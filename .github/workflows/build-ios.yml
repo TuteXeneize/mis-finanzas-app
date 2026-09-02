@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-ios:
     name: Compilar IPA de FinanzasApp
@@ -13,6 +16,8 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Instalar XcodeGen
         run: brew install xcodegen
@@ -21,6 +26,8 @@ jobs:
         run: |
           cd ios/FinanzasApp
           xcodegen generate
+          echo "=== Esquemas detectados ==="
+          xcodebuild -project FinanzasApp.xcodeproj -list
 
       - name: Compilar Binario con xcodebuild
         run: |
@@ -45,6 +52,15 @@ jobs:
           echo '```text' >> $GITHUB_STEP_SUMMARY
           grep -C 3 -i "error:" build.log | head -n 40 >> $GITHUB_STEP_SUMMARY || tail -n 40 build.log >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B debug-log
+          cp build.log ../../build-error.txt
+          cd ../..
+          git add build-error.txt
+          git commit -m "Auto: Log de error exacto" || true
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git debug-log --force || true
 
       - name: Empaquetar archivo .IPA
         if: success()
