@@ -31,47 +31,27 @@ jobs:
           cd ios/FinanzasApp
           xcodegen generate
 
-      - name: Compilar App (.app)
+      - name: Compilar y Generar Archive (.xcarchive)
         run: |
           cd ios/FinanzasApp
-          xcodebuild build \
+          xcodebuild archive \
             -project FinanzasApp.xcodeproj \
             -scheme FinanzasApp \
             -destination 'generic/platform=iOS' \
-            -configuration Release \
+            -archivePath "$(pwd)/build/FinanzasApp.xcarchive" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="-" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="" \
-            BUILD_DIR="$(pwd)/build" 2>&1 | tee build.log
+            DEVELOPMENT_TEAM="" 2>&1 | tee build.log
 
-      - name: Subir Log de Compilación
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Build-Logs
-          path: ios/FinanzasApp/build.log
-
-      - name: Empaquetar en archivo .IPA
+      - name: Empaquetar archivo .IPA
         run: |
           cd ios/FinanzasApp
-          echo "Listando archivos compilados en build:"
-          find build -type d -name "*.app" || true
-          
-          APP_PATH=$(find build -type d -name "*.app" | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "*.app" | head -n 1)
-          fi
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find . -type d -name "*.app" | head -n 1)
-          fi
-          
-          echo "===> Copiando app desde: $APP_PATH"
           mkdir -p Payload
-          cp -R "$APP_PATH" Payload/
+          cp -R "build/FinanzasApp.xcarchive/Products/Applications/FinanzasApp.app" Payload/
           zip -r -q FinanzasApp.ipa Payload
-          echo "IPA generado exitosamente!"
+          echo "IPA generado con éxito!"
 
       - name: Subir instalador IPA como Artefacto
         uses: actions/upload-artifact@v4
