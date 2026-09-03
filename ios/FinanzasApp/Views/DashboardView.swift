@@ -18,6 +18,7 @@ struct DashboardView: View {
     @State private var mensajeAlerta: String = ""
     @State private var mostrarAlerta: Bool = false
     @State private var feedbackExito: String? = nil
+    @StateObject private var speechManager = SpeechRecognizerManager()
     
     var body: some View {
         NavigationStack {
@@ -196,13 +197,24 @@ extension DashboardView {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 8) {
-                TextField("Ej: Gasté 15 lucas en súper con débito...", text: $textoIA)
+                TextField(speechManager.isRecording ? "Escuchando... decí tu gasto" : "Ej: Gasté 15 lucas en súper con débito...", text: $textoIA)
                     .padding(12)
-                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .background(speechManager.isRecording ? Color.red.opacity(0.12) : Color(UIColor.secondarySystemGroupedBackground))
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.04), radius: 3, x: 0, y: 1)
                     .disabled(estaProcesandoIA)
                     .onSubmit(enviarTextoAIA)
+                
+                // Botón de Reconocimiento de Voz / Micrófono
+                Button(action: toggleGrabacionVoz) {
+                    Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(speechManager.isRecording ? .white : .blue)
+                        .padding(10)
+                        .background(speechManager.isRecording ? Color.red : Color.blue.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .disabled(estaProcesandoIA)
                 
                 Button(action: enviarTextoAIA) {
                     if estaProcesandoIA {
@@ -324,6 +336,22 @@ extension DashboardView {
                     mensajeAlerta = error.localizedDescription
                     mostrarAlerta = true
                 }
+            }
+        }
+    }
+    
+    // 5. Control del micrófono y dictado por voz
+    private func toggleGrabacionVoz() {
+        if speechManager.isRecording {
+            speechManager.stopRecording()
+            // Si capturó texto por voz, lo enviamos automáticamente a la IA
+            if !textoIA.trimmingCharacters(in: .whitespaces).isEmpty {
+                enviarTextoAIA()
+            }
+        } else {
+            textoIA = ""
+            speechManager.startRecording { transcript in
+                self.textoIA = transcript
             }
         }
     }

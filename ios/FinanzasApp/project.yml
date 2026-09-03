@@ -25,6 +25,8 @@ targets:
           - UIInterfaceOrientationPortrait
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
+        NSSpeechRecognitionUsageDescription: "Permite dictar tus gastos e ingresos por voz para la IA."
+        NSMicrophoneUsageDescription: "Permite registrar tus transacciones mediante el micrófono."
     scheme:
       environmentVariables: {}
     settings:

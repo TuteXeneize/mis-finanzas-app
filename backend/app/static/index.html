@@ -139,7 +139,10 @@
   <!-- Input Flotante de IA en la parte inferior del Dashboard -->
   <div id="aiInputBar" class="fixed bottom-16 left-0 right-0 p-3 bg-gradient-to-t from-[#f2f2f7] via-[#f2f2f7]/90 to-transparent z-20">
     <div class="max-w-md mx-auto flex items-center space-x-2 bg-white rounded-full p-1.5 pl-4 shadow-lg border border-slate-200">
-      <input type="text" id="inputTextoIA" placeholder="Ej: Gasté 15 lucas en súper con débito..." class="flex-1 text-sm bg-transparent focus:outline-none text-slate-800" onkeydown="if(event.key==='Enter') procesarIA()" />
+      <input type="text" id="inputTextoIA" placeholder="Ej: Gasté 15 lucas en súper..." class="flex-1 text-sm bg-transparent focus:outline-none text-slate-800" onkeydown="if(event.key==='Enter') procesarIA()" />
+      <button onclick="toggleVozWeb()" id="btnMic" class="w-9 h-9 rounded-full bg-slate-100 text-blue-600 flex items-center justify-center shrink-0 hover:bg-slate-200 transition">
+        <i data-lucide="mic" class="w-4 h-4"></i>
+      </button>
       <button onclick="procesarIA()" id="btnIA" class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 hover:bg-blue-700 transition shadow-sm">
         <i data-lucide="sparkles" class="w-4 h-4"></i>
       </button>
@@ -518,6 +521,52 @@
           }
         });
       }
+    }
+
+    // --- RECONOCIMIENTO DE VOZ WEB ---
+    let webRecognition = null;
+    let webGrabando = false;
+
+    function toggleVozWeb() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("El dictado directo por voz no está soportado en este navegador. Podés usar el micrófono del teclado de tu celular.");
+        return;
+      }
+      if (webGrabando) {
+        if (webRecognition) webRecognition.stop();
+        return;
+      }
+      webRecognition = new SpeechRecognition();
+      webRecognition.lang = 'es-AR';
+      webRecognition.interimResults = true;
+      webRecognition.onstart = () => {
+        webGrabando = true;
+        const btn = document.getElementById('btnMic');
+        btn.className = 'w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 animate-pulse';
+        document.getElementById('inputTextoIA').placeholder = 'Escuchando... decí tu gasto';
+      };
+      webRecognition.onresult = (e) => {
+        const text = Array.from(e.results).map(r => r[0].transcript).join('');
+        document.getElementById('inputTextoIA').value = text;
+      };
+      webRecognition.onend = () => {
+        webGrabando = false;
+        const btn = document.getElementById('btnMic');
+        btn.className = 'w-9 h-9 rounded-full bg-slate-100 text-blue-600 flex items-center justify-center shrink-0 hover:bg-slate-200 transition';
+        document.getElementById('inputTextoIA').placeholder = 'Ej: Gasté 15 lucas en súper...';
+        if (document.getElementById('inputTextoIA').value.trim().length > 0) {
+          procesarIA();
+        }
+      };
+      webRecognition.onerror = (e) => {
+        console.error("Error dictado:", e);
+        webGrabando = false;
+        const btn = document.getElementById('btnMic');
+        btn.className = 'w-9 h-9 rounded-full bg-slate-100 text-blue-600 flex items-center justify-center shrink-0 hover:bg-slate-200 transition';
+        document.getElementById('inputTextoIA').placeholder = 'Ej: Gasté 15 lucas en súper...';
+      };
+      webRecognition.start();
     }
 
     // Inicializar
