@@ -17,34 +17,22 @@ enum TipoTransaccion: String, Codable, CaseIterable, Identifiable {
 
 // MARK: - Método de Pago
 enum MetodoPago: String, Codable, CaseIterable, Identifiable {
-    case noEspecificado = "no_especificado"
-    case efectivo = "efectivo"
-    case debito = "debito"
-    case credito = "credito"
     case mercadoPago = "mercado_pago"
-    case transferencia = "transferencia"
+    case efectivo = "efectivo"
     
     var id: String { rawValue }
     
     var titulo: String {
         switch self {
-        case .noEspecificado: return "No Especificado"
-        case .efectivo: return "Efectivo"
-        case .debito: return "Débito"
-        case .credito: return "Crédito"
         case .mercadoPago: return "Mercado Pago"
-        case .transferencia: return "Transferencia"
+        case .efectivo: return "Efectivo"
         }
     }
     
     var icono: String {
         switch self {
-        case .noEspecificado: return "questionmark.circle"
-        case .efectivo: return "banknote"
-        case .debito: return "creditcard"
-        case .credito: return "creditcard.fill"
         case .mercadoPago: return "iphone.and.arrow.forward"
-        case .transferencia: return "arrow.left.arrow.right"
+        case .efectivo: return "banknote"
         }
     }
 }

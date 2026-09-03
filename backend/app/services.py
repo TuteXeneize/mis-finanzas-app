@@ -35,7 +35,7 @@ Instrucciones:
    - descripcion (breve y concisa, ej. "Pizza de muzzarella", "Carga de combustible", "Cobro de sueldo").
    - tipo ("gasto" o "ingreso"). Si es confuso o es un gasto explícito, clasifícalo como "gasto". Si dice "me pagaron", "cobré", "ingreso", "sueldo", clasifícalo como "ingreso".
    - categoria_id: El ID exacto de la categoría más adecuada de la lista proporcionada. Si ninguna coincide claramente, devuelve null.
-   - metodo_pago: Uno de los siguientes: "efectivo", "debito", "credito", "mercado_pago", "transferencia", "no_especificado".
+   - metodo_pago: Uno de los siguientes: "mercado_pago", "efectivo". Por defecto debe ser SIEMPRE "mercado_pago", a menos que el usuario mencione explícitamente "efectivo", "cash", "billete" o "en mano".
    - fecha: Formato YYYY-MM-DD. Si menciona "ayer", "hoy", "hace 2 días", calcula la fecha exacta respecto a {fecha_actual}.
 
 3. Casos de respuesta:
@@ -134,18 +134,12 @@ def _procesar_con_reglas_locales(payload: TransaccionRequest) -> RespuestaAPI:
             mensaje_aclaratorio="No identifiqué un gasto o ingreso claro. Intentá indicar el monto y qué compraste o cobraste."
         )
 
-    # 4. Detección de método de pago
-    metodo_pago = "no_especificado"
-    if "mercado pago" in texto or "mercadopago" in texto or "mp" in texto:
-        metodo_pago = "mercado_pago"
-    elif "transferencia" in texto or "transfer" in texto:
-        metodo_pago = "transferencia"
-    elif "debito" in texto or "débito" in texto:
-        metodo_pago = "debito"
-    elif "credito" in texto or "crédito" in texto or "tarjeta" in texto:
-        metodo_pago = "credito"
-    elif "efectivo" in texto or "cash" in texto:
+    # 4. Detección de método de pago (por defecto mercado_pago, solo efectivo si se menciona)
+    palabras_efectivo = ["efectivo", "cash", "billete", "billetes", "en mano", "plata en mano"]
+    if any(p in texto for p in palabras_efectivo):
         metodo_pago = "efectivo"
+    else:
+        metodo_pago = "mercado_pago"
 
     # 5. Detección de fecha
     fecha_base = payload.fecha_actual.split("T")[0]

@@ -15,7 +15,7 @@ struct NuevaTransaccionView: View {
     @State private var montoTexto: String = ""
     @State private var descripcion: String = ""
     @State private var categoriaID: UUID? = nil
-    @State private var metodoPago: MetodoPago = .noEspecificado
+    @State private var metodoPago: MetodoPago = .mercadoPago
     @State private var fecha: Date = Date()
     
     var body: some View {

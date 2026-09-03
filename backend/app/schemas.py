@@ -25,8 +25,8 @@ class TransaccionDTO(BaseModel):
     tipo: str = Field(..., pattern="^(gasto|ingreso)$", description="Tipo de movimiento: gasto o ingreso")
     categoria_id: Optional[str] = Field(default=None, description="ID de la categoría elegida entre las disponibles")
     metodo_pago: str = Field(
-        default="no_especificado",
-        description="Método de pago (efectivo, debito, credito, mercado_pago, transferencia, no_especificado)"
+        default="mercado_pago",
+        description="Método de pago (mercado_pago, efectivo)"
     )
     fecha: str = Field(..., description="Fecha de la transacción en formato YYYY-MM-DD")
 

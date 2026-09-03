@@ -286,7 +286,7 @@ extension DashboardView {
                         let catUUID = txDTO.categoria_id.flatMap { UUID(uuidString: $0) }
                         let fechaTx = AppFormatters.parsearFechaDelBackend(txDTO.fecha)
                         let tipoTx = TipoTransaccion(rawValue: txDTO.tipo) ?? .gasto
-                        let metodoTx = MetodoPago(rawValue: txDTO.metodo_pago) ?? .noEspecificado
+                        let metodoTx = MetodoPago(rawValue: txDTO.metodo_pago) ?? .mercadoPago
                         let montoFinal = NSDecimalNumber(value: txDTO.monto).decimalValue
                         
                         let nuevaTransaccion = Transaccion(

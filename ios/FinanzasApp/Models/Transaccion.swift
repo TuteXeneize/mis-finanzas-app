@@ -21,7 +21,7 @@ final class Transaccion: Identifiable {
     
     // Propiedad computada para método de pago
     var metodoPago: MetodoPago {
-        get { MetodoPago(rawValue: metodoPagoRaw) ?? .noEspecificado }
+        get { MetodoPago(rawValue: metodoPagoRaw) ?? .mercadoPago }
         set { metodoPagoRaw = newValue.rawValue }
     }
     
@@ -31,7 +31,7 @@ final class Transaccion: Identifiable {
         descripcion: String,
         tipo: TipoTransaccion = .gasto,
         categoriaID: UUID? = nil,
-        metodoPago: MetodoPago = .noEspecificado,
+        metodoPago: MetodoPago = .mercadoPago,
         fecha: Date = Date(),
         moneda: String = "ARS",
         fechaRegistro: Date = Date()

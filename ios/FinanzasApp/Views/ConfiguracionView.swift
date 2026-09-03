@@ -134,14 +134,14 @@ struct ConfiguracionView: View {
             monto: 35000,
             descripcion: "Compra semanal Coto",
             tipo: .gasto,
-            metodoPago: .debito,
+            metodoPago: .mercadoPago,
             fecha: Date()
         )
         let tx2 = Transaccion(
             monto: 1500000,
             descripcion: "Cobro de Sueldo",
             tipo: .ingreso,
-            metodoPago: .transferencia,
+            metodoPago: .mercadoPago,
             fecha: Date()
         )
         let tx3 = Transaccion(
