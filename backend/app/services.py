@@ -105,20 +105,22 @@ def _procesar_con_reglas_locales(payload: TransaccionRequest) -> RespuestaAPI:
             val = float(match_palos.group(1).replace(',', '.'))
             monto = val * 1000000.0
 
-    # Patrón número estándar (ej: $15000, 15.000, 15000, 150.50)
+    # Patrón número estándar (ej: 1500, 1253, 15000, 15.000, $5000)
     if monto is None:
-        match_num = re.search(r'\$?\s*(\d{1,3}(?:[.]\d{3})*(?:,\d+)?|\d+(?:[.,]\d+)?)', texto)
-        if match_num:
-            raw_str = match_num.group(1)
-            # Si tiene formato con puntos de miles (ej: 15.000)
-            if '.' in raw_str and ',' not in raw_str and len(raw_str.split('.')[-1]) == 3:
-                raw_str = raw_str.replace('.', '')
-            elif ',' in raw_str:
-                raw_str = raw_str.replace('.', '').replace(',', '.')
-            try:
-                monto = float(raw_str)
-            except ValueError:
-                monto = None
+        # 1. Separador de miles con punto (ej: 15.000 o 15.000,50)
+        m1 = re.search(r'[$]?\s*(\d{1,3}(?:\.\d{3})+(?:,\d+)?)', texto)
+        if m1:
+            monto = float(m1.group(1).replace('.', '').replace(',', '.'))
+        else:
+            # 2. Separador de miles con coma (ej: 15,000 o 15,000.50)
+            m2 = re.search(r'[$]?\s*(\d{1,3}(?:,\d{3})+(?:\.\d+)?)', texto)
+            if m2:
+                monto = float(m2.group(1).replace(',', ''))
+            else:
+                # 3. Número entero o decimal estándar (ej: 1500, 1253, 15000, 150.50)
+                m3 = re.search(r'[$]?\s*(\d+(?:[.,]\d+)?)', texto)
+                if m3:
+                    monto = float(m3.group(1).replace(',', '.'))
 
     # Si no tiene monto, verificar si al menos tenía intención de transacción
     if monto is None or monto <= 0:
@@ -165,8 +167,9 @@ def _procesar_con_reglas_locales(payload: TransaccionRequest) -> RespuestaAPI:
 
     if categoria_id is None:
         keywords_cat = {
-            "super": ["super", "súper", "coto", "dia", "carrefour", "vea", "chango", "almacen", "comida", "pizza", "hamburguesa", "asado", "cena", "almuerzo"],
-            "servicios": ["luz", "gas", "agua", "internet", "fibertel", "edenor", "edesur", "metrogas", "telecentro", "personal", "flow"],
+            "super": ["super", "súper", "coto", "dia", "carrefour", "vea", "chango", "almacen", "almacén", "chino", "comida", "pizza", "hamburguesa", "asado", "cena", "almuerzo", "verduleria", "verdulería", "carniceria", "carnicería", "panaderia", "panadería", "fruteria", "frutería", "kiosco"],
+            "comida": ["comida", "almuerzo", "cena", "desayuno", "merienda", "restaurante", "resto", "bar", "pizza", "empanadas", "hamburguesa", "helado", "cafe", "café", "verduleria", "verdulería", "carniceria", "carnicería", "panaderia", "panadería"],
+            "servicios": ["luz", "gas", "agua", "internet", "fibertel", "edenor", "edesur", "metrogas", "telecentro", "personal", "flow", "impuesto", "patente", "abl", "expensas"],
             "transporte": ["uber", "cabify", "didi", "nafta", "ypf", "shell", "axion", "sube", "colectivo", "peaje", "estacionamiento"],
             "sueldo": ["sueldo", "salario", "honorarios", "quincena"],
             "salud": ["farmacia", "remedio", "medico", "médico", "dentista", "osde", "swiss"],
