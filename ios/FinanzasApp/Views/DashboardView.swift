@@ -168,10 +168,22 @@ extension DashboardView {
                     .font(.body)
                     .fontWeight(.semibold)
                 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Text(nombreCategoria(para: tx.categoriaID))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    
+                    Text(tx.metodoPago.titulo)
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(tx.metodoPago == .mercadoPago ? Color.blue.opacity(0.15) : Color.green.opacity(0.15))
+                        .foregroundStyle(tx.metodoPago == .mercadoPago ? Color.blue : Color.green)
+                        .clipShape(Capsule())
                     
                     Text("•")
                         .font(.caption2)

@@ -431,7 +431,13 @@
                 </div>
                 <div>
                   <div class="text-sm font-semibold text-slate-800">${t.descripcion}</div>
-                  <div class="text-[11px] text-slate-400">${catNombre} • ${t.fecha}</div>
+                  <div class="text-[11px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                    <span>${catNombre}</span>
+                    <span>•</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold ${t.metodo_pago === 'efectivo' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}">${t.metodo_pago === 'efectivo' ? 'Efectivo' : 'Mercado Pago'}</span>
+                    <span>•</span>
+                    <span>${t.fecha}</span>
+                  </div>
                 </div>
               </div>
               <div class="flex items-center space-x-2">
