@@ -7,7 +7,9 @@ struct FinanzasApp: App {
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Transaccion.self,
-            CategoriaUsuario.self
+            CategoriaUsuario.self,
+            ActivoInversion.self,
+            TransaccionInversion.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -29,12 +31,20 @@ struct FinanzasApp: App {
                     "Educación",
                     "Entretenimiento",
                     "Sueldo & Honorarios",
+                    "Inversiones",
                     "Otros"
                 ]
                 for nombre in categoriasIniciales {
                     context.insert(CategoriaUsuario(nombre: nombre))
                 }
                 try? context.save()
+            } else {
+                // Asegurar que la categoría Inversiones exista
+                let todasCats = (try? context.fetch(descriptor)) ?? []
+                if !todasCats.contains(where: { $0.nombre.lowercased() == "inversiones" }) {
+                    context.insert(CategoriaUsuario(nombre: "Inversiones"))
+                    try? context.save()
+                }
             }
             
             return container

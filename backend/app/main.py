@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.schemas import TransaccionRequest, RespuestaAPI
 from app.services import procesar_transaccion_con_ia
+from app.investments import router as investments_router
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -58,6 +59,10 @@ def verificar_token(authorization: str = Header(...)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Formato de autorización inválido. Usar 'Bearer <token>'"
         )
+
+
+# Incluir router de inversiones y cotizaciones
+app.include_router(investments_router)
 
 
 @app.get("/health", tags=["Control"])

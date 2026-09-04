@@ -11,28 +11,34 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
+            InversionesView()
+                .tabItem {
+                    Label("Inversiones", systemImage: "chart.line.uptrend.xyaxis")
+                }
+                .tag(1)
+            
             EstadisticasView()
                 .tabItem {
                     Label("Estadísticas", systemImage: "chart.pie.fill")
                 }
-                .tag(1)
+                .tag(2)
             
             GestorCategoriasView()
                 .tabItem {
                     Label("Categorías", systemImage: "tag.fill")
                 }
-                .tag(2)
+                .tag(3)
             
             ConfiguracionView()
                 .tabItem {
                     Label("Ajustes", systemImage: "gearshape.fill")
                 }
-                .tag(3)
+                .tag(4)
         }
     }
 }
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [Transaccion.self, CategoriaUsuario.self], inMemory: true)
+        .modelContainer(for: [Transaccion.self, CategoriaUsuario.self, ActivoInversion.self, TransaccionInversion.self], inMemory: true)
 }
