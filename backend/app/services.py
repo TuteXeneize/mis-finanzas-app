@@ -32,7 +32,7 @@ Instrucciones:
 2. Extrae:
    - monto (número float > 0). Comprende modismos: "15 lucas" = 15000, "1 palo / 1 millón" = 1000000, "20k" = 20000, "3 gambas" = 300.
    - moneda ("ARS", "USD", etc. Por defecto "ARS").
-   - descripcion (breve y concisa, ej. "Pizza de muzzarella", "Carga de combustible", "Cobro de sueldo").
+   - descripcion (breve y concisa, exclusivamente el concepto, comercio o producto, ej. "Carne", "Verdulería", "Nafta", "Sueldo", "Luz". NUNCA incluir el monto ni el método de pago dentro de la descripción).
    - tipo ("gasto" o "ingreso"). Si es confuso o es un gasto explícito, clasifícalo como "gasto". Si dice "me pagaron", "cobré", "ingreso", "sueldo", clasifícalo como "ingreso".
    - categoria_id: El ID exacto de la categoría más adecuada de la lista proporcionada. Si ninguna coincide claramente, devuelve null.
    - metodo_pago: Uno de los siguientes: "mercado_pago", "efectivo". Por defecto debe ser SIEMPRE "mercado_pago", a menos que el usuario mencione explícitamente "efectivo", "cash", "billete" o "en mano".
@@ -167,13 +167,13 @@ def _procesar_con_reglas_locales(payload: TransaccionRequest) -> RespuestaAPI:
 
     if categoria_id is None:
         keywords_cat = {
-            "super": ["super", "súper", "coto", "dia", "carrefour", "vea", "chango", "almacen", "almacén", "chino", "comida", "pizza", "hamburguesa", "asado", "cena", "almuerzo", "verduleria", "verdulería", "carniceria", "carnicería", "panaderia", "panadería", "fruteria", "frutería", "kiosco"],
-            "comida": ["comida", "almuerzo", "cena", "desayuno", "merienda", "restaurante", "resto", "bar", "pizza", "empanadas", "hamburguesa", "helado", "cafe", "café", "verduleria", "verdulería", "carniceria", "carnicería", "panaderia", "panadería"],
-            "servicios": ["luz", "gas", "agua", "internet", "fibertel", "edenor", "edesur", "metrogas", "telecentro", "personal", "flow", "impuesto", "patente", "abl", "expensas"],
-            "transporte": ["uber", "cabify", "didi", "nafta", "ypf", "shell", "axion", "sube", "colectivo", "peaje", "estacionamiento"],
-            "sueldo": ["sueldo", "salario", "honorarios", "quincena"],
-            "salud": ["farmacia", "remedio", "medico", "médico", "dentista", "osde", "swiss"],
-            "ocio": ["cine", "teatro", "boliche", "bar", "salida", "juego", "steam"]
+            "comida": ["carne", "asado", "pollo", "pescado", "milanesa", "milanesas", "hamburguesa", "hamburguesas", "pizza", "empanadas", "comida", "almuerzo", "cena", "desayuno", "merienda", "restaurante", "resto", "bar", "helado", "cafe", "café", "verduleria", "verdulería", "carniceria", "carnicería", "panaderia", "panadería"],
+            "super": ["super", "súper", "coto", "dia", "carrefour", "vea", "chango", "almacen", "almacén", "chino", "kiosco", "fruteria", "frutería"],
+            "servicios": ["luz", "gas", "agua", "internet", "fibertel", "edenor", "edesur", "metrogas", "telecentro", "personal", "flow", "impuesto", "patente", "abl", "expensas", "alquiler"],
+            "transporte": ["uber", "cabify", "didi", "nafta", "ypf", "shell", "axion", "sube", "colectivo", "peaje", "estacionamiento", "remis"],
+            "sueldo": ["sueldo", "salario", "honorarios", "quincena", "aguinaldo"],
+            "salud": ["farmacia", "remedio", "remedios", "medico", "médico", "dentista", "osde", "swiss"],
+            "ocio": ["cine", "teatro", "boliche", "salida", "juego", "steam", "playstation", "recital"]
         }
         for cat in payload.categorias:
             nom = cat.nombre.lower()
@@ -187,15 +187,31 @@ def _procesar_con_reglas_locales(payload: TransaccionRequest) -> RespuestaAPI:
     if categoria_id is None and payload.categorias and len(payload.categorias) == 1:
         categoria_id = payload.categorias[0].id
 
-    # 7. Construcción de descripción limpia
-    descripcion = payload.texto.strip()
-    desc_limpia = re.sub(r'^(gast[eé]|pagu[eé]|compr[eé]|cobr[eé]|ingres[eé])\s+', '', descripcion, flags=re.IGNORECASE)
-    desc_limpia = re.sub(r'\b(con|en|por)\s+(efectivo|debito|débito|credito|crédito|mercado pago|mp|transferencia)\b', '', desc_limpia, flags=re.IGNORECASE)
-    desc_limpia = desc_limpia.strip()
-    if not desc_limpia:
-        desc_limpia = "Gasto registrado" if tipo == "gasto" else "Ingreso registrado"
+    # 7. Construcción de descripción limpia y concisa (ej: "Carne", "Nafta", "Verdulería")
+    desc = payload.texto.strip()
+    # a. Quitar menciones temporales (ayer, hoy, anoche, etc.)
+    desc = re.sub(r'\b(ayer|hoy|anteayer|anoche|esta mañana|esta tarde|este mediodia)\b', '', desc, flags=re.IGNORECASE).strip()
+    # b. Quitar verbos de acción
+    desc = re.sub(r'^\s*(gast[eé]|pagu[eé]|compr[eé]|cobr[eé]|ingres[eé]|transfer[ií]|mand[eé]|recib[ií])\s+', '', desc, flags=re.IGNORECASE).strip()
+    # c. Quitar método de pago explícito
+    desc = re.sub(r'\b(con|en|por)\s+(el\s+|la\s+)?(efectivo|debito|débito|credito|crédito|mercado pago|mercadopago|mp|transferencia|cash|en mano)\b', '', desc, flags=re.IGNORECASE)
+    desc = re.sub(r'\b(efectivo|debito|débito|credito|crédito|mercado pago|mercadopago|mp|transferencia|cash|en mano)\b', '', desc, flags=re.IGNORECASE)
+    # d. Quitar montos, multiplicadores y monedas
+    desc = re.sub(r'\b\d+(?:[.,]\d+)?\s*(?:lucas?|lukas?|palos?|millones?|millon|millón|mil|k)\b', '', desc, flags=re.IGNORECASE)
+    desc = re.sub(r'[$]?\s*\b\d{1,3}(?:[.]\d{3})+(?:,\d+)?\b', '', desc)
+    desc = re.sub(r'[$]?\s*\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b', '', desc)
+    desc = re.sub(r'[$]?\s*\b\d+(?:[.,]\d+)?\b', '', desc)
+    desc = re.sub(r'[$]', '', desc)
+    desc = re.sub(r'\b(pesos|dolares|dólares|lucas?|lukas?|palos?|millones?|millon|millón|mil|ars|usd)\b', '', desc, flags=re.IGNORECASE)
+    # e. Quitar conectores iniciales comunes
+    desc = re.sub(r'^\s*(en\s+(la\s+|el\s+|los\s+|las\s+)?|de\s+(la\s+|el\s+|los\s+|las\s+)?|del\s+|al\s+|para\s+(la\s+|el\s+|los\s+|las\s+)?|por\s+(la\s+|el\s+|los\s+|las\s+)?|el\s+|la\s+|los\s+|las\s+|un\s+|una\s+|unos\s+|unas\s+)', '', desc, flags=re.IGNORECASE).strip()
+    # f. Limpiar espacios y signos sobrantes
+    desc = re.sub(r'\s+', ' ', desc).strip(' .,-:')
 
-    desc_limpia = desc_limpia[:1].upper() + desc_limpia[1:]
+    if not desc or len(desc) <= 1:
+        desc = "Gasto" if tipo == "gasto" else "Ingreso"
+
+    desc_limpia = desc[:1].upper() + desc[1:]
 
     return RespuestaAPI(
         estado="ok",
