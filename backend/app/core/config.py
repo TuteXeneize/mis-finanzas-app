@@ -11,10 +11,9 @@ class Settings:
     META_VERIFY_TOKEN: str = os.getenv("META_VERIFY_TOKEN", "token_secreto_super_seguro_2026")
     
     # Token de Acceso Permanente generado en Meta Developers / Sistema
-    META_ACCESS_TOKEN: str = os.getenv(
-        "META_ACCESS_TOKEN", 
-        "EAATHu5ZAJ1rsBSZAZAIMkOaCguSiZCaSnyWAJ2du37eewYKKWNz7OOZAt5wlmk5YZB9ZBVjGAeHwurvsHuBESePNbgB3xJzSaSexlPVLDWIj7YgV7HOylH1iAFwR6eflZBWl3T6j8ygcg2WcatHajKZCzcWgbqZBkOZCPRzZCtBKYv2gWP9hkQ0yZALoS4zKh66ZBMRAZDZD"
-    )
+    PERMANENT_SYSTEM_TOKEN: str = "EAATHu5ZAJ1rsBSZAZAIMkOaCguSiZCaSnyWAJ2du37eewYKKWNz7OOZAt5wlmk5YZB9ZBVjGAeHwurvsHuBESePNbgB3xJzSaSexlPVLDWIj7YgV7HOylH1iAFwR6eflZBWl3T6j8ygcg2WcatHajKZCzcWgbqZBkOZCPRzZCtBKYv2gWP9hkQ0yZALoS4zKh66ZBMRAZDZD"
+    _env_token: str = os.getenv("META_ACCESS_TOKEN", "")
+    META_ACCESS_TOKEN: str = PERMANENT_SYSTEM_TOKEN if (not _env_token or _env_token.startswith("EAAps")) else _env_token
     
     # ID del número de teléfono desde el que Meta envía los WhatsApp
     META_PHONE_NUMBER_ID: str = os.getenv("META_PHONE_NUMBER_ID", "1172805419258900")
