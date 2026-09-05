@@ -85,10 +85,43 @@ def debug_logs():
     from app.core.config import settings
     conn = sqlite3.connect(settings.SQLITE_DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT * FROM message_log ORDER BY id DESC LIMIT 5")
-    rows = c.fetchall()
+    c.execute("SELECT * FROM message_log ORDER BY received_at DESC LIMIT 10")
+    cols = [col[0] for col in c.description]
+    rows = [dict(zip(cols, row)) for row in c.fetchall()]
     conn.close()
-    return {"message_logs": rows}
+    return {
+        "token_prefix": settings.META_ACCESS_TOKEN[:15] if settings.META_ACCESS_TOKEN else "VACIO",
+        "token_len": len(settings.META_ACCESS_TOKEN),
+        "phone_id": settings.META_PHONE_NUMBER_ID,
+        "message_logs": rows
+    }
+
+
+@app.get("/test-send-ahora", tags=["Control"])
+async def test_send_ahora():
+    import httpx
+    from app.core.whatsapp_sender import whatsapp_sender
+    from app.core.config import settings
+
+    candidatos = whatsapp_sender._obtener_candidatos_destino("5491155078962")
+    detalles = []
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for c in candidatos:
+            payload = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": c,
+                "type": "text",
+                "text": {"preview_url": False, "body": "🤖 Diagnostico en vivo desde Render"}
+            }
+            resp = await client.post(whatsapp_sender.base_url, headers=whatsapp_sender.headers, json=payload)
+            detalles.append({"to": c, "status": resp.status_code, "response": resp.text})
+
+    return {
+        "token_prefix": settings.META_ACCESS_TOKEN[:15] if settings.META_ACCESS_TOKEN else "VACIO",
+        "phone_id": settings.META_PHONE_NUMBER_ID,
+        "detalles": detalles
+    }
 
 
 @app.post(

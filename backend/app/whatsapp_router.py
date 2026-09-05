@@ -74,17 +74,15 @@ async def receive_webhook(request: Request, background_tasks: BackgroundTasks):
                     # 1. Guardar estado RECEIVED
                     message_log_repo.create_message(message_id, sender_id, "RECEIVED")
                     
-                    # 2. Delegar a la cola asíncrona
-                    background_tasks.add_task(
-                        procesar_mensaje_whatsapp_background,
+                    # 2. Procesar de forma directa y asíncrona garantizada
+                    await procesar_mensaje_whatsapp_background(
                         message_id=message_id,
                         sender_id=sender_id,
                         texto=texto_usuario
                     )
                 elif mensaje.get("type") == "audio":
                     message_log_repo.create_message(message_id, sender_id, "RECEIVED")
-                    background_tasks.add_task(
-                        whatsapp_sender.enviar_mensaje,
+                    await whatsapp_sender.enviar_mensaje(
                         numero_destino=sender_id,
                         texto="🎤 Recibí tu audio. Por el momento podés escribirlo en texto (ej: 'Gasté 1500 en carne' o '15 lucas en nafta')."
                     )
