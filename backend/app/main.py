@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from app.schemas import TransaccionRequest, RespuestaAPI
 from app.services import procesar_transaccion_con_ia
 from app.investments import router as investments_router
+from app.whatsapp_router import router as whatsapp_router
 
 # Cargar variables de entorno desde .env
 load_dotenv()
@@ -63,6 +64,9 @@ def verificar_token(authorization: str = Header(...)):
 
 # Incluir router de inversiones y cotizaciones
 app.include_router(investments_router)
+
+# Incluir router de WhatsApp y sincronización con iOS
+app.include_router(whatsapp_router)
 
 
 @app.get("/health", tags=["Control"])

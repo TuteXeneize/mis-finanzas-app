@@ -12,6 +12,7 @@ final class Transaccion: Identifiable {
     var fecha: Date
     var moneda: String
     var fechaRegistro: Date
+    var whatsappMessageId: String? = nil
     
     // Propiedad computada para tipado seguro
     var tipo: TipoTransaccion {
@@ -34,7 +35,8 @@ final class Transaccion: Identifiable {
         metodoPago: MetodoPago = .mercadoPago,
         fecha: Date = Date(),
         moneda: String = "ARS",
-        fechaRegistro: Date = Date()
+        fechaRegistro: Date = Date(),
+        whatsappMessageId: String? = nil
     ) {
         self.id = id
         self.monto = monto
@@ -45,5 +47,6 @@ final class Transaccion: Identifiable {
         self.fecha = fecha
         self.moneda = moneda
         self.fechaRegistro = fechaRegistro
+        self.whatsappMessageId = whatsappMessageId
     }
 }

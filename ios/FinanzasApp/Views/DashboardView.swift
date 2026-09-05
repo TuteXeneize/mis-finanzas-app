@@ -19,12 +19,13 @@ struct DashboardView: View {
     @State private var mostrarAlerta: Bool = false
     @State private var feedbackExito: String? = nil
     @StateObject private var speechManager = SpeechRecognizerManager()
+    @StateObject private var syncService = SyncService()
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Banner de feedback exitoso
-                if let feedback = feedbackExito {
+                if let feedback = feedbackExito ?? syncService.feedbackSync {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
@@ -78,6 +79,20 @@ struct DashboardView: View {
             .navigationTitle("Mis Finanzas")
             .background(Color(UIColor.systemGroupedBackground))
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        Task { await syncService.sincronizar(context: modelContext, categoriasExistentes: categorias) }
+                    }) {
+                        if syncService.estaSincronizando {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.subheadline)
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { mostrarFormularioManual = true }) {
                         Image(systemName: "plus")
@@ -92,6 +107,14 @@ struct DashboardView: View {
                 Button("Entendido", role: .cancel) { }
             } message: {
                 Text(mensajeAlerta)
+            }
+            .onAppear {
+                Task {
+                    await syncService.sincronizar(context: modelContext, categoriasExistentes: categorias)
+                }
+            }
+            .refreshable {
+                await syncService.sincronizar(context: modelContext, categoriasExistentes: categorias)
             }
         }
     }

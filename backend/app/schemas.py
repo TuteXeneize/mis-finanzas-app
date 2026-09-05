@@ -50,3 +50,28 @@ class RespuestaAPI(BaseModel):
         default=None,
         description="Mensaje amigable para el usuario si faltan datos o no es una transacción válida"
     )
+
+
+# --- Esquemas de Sincronización para la App iOS (Patrón ACK) ---
+
+class TransaccionSyncResponse(BaseModel):
+    transaction_id: str
+    whatsapp_message_id: str
+    fecha_transaccion: str
+    monto: float
+    moneda: str = "ARS"
+    descripcion: str
+    categoria_id: Optional[str] = None
+    categoria_nombre: Optional[str] = None
+    metodo_pago: str = "mercado_pago"
+    tipo: str = "gasto"
+    created_at: str
+
+
+class SyncGetResponse(BaseModel):
+    transacciones_pendientes: List[TransaccionSyncResponse]
+    cantidad: int
+
+
+class SyncConfirmRequest(BaseModel):
+    transaction_ids: List[str]

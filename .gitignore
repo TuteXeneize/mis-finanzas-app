@@ -5,6 +5,9 @@ __pycache__/
 .env
 venv/
 .venv/
+*.db
+*.sqlite3
+*.sqlite
 
 # macOS / iOS
 .DS_Store
