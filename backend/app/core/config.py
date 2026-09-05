@@ -13,7 +13,7 @@ class Settings:
     # Token de Acceso Permanente generado en Meta Developers / Sistema
     META_ACCESS_TOKEN: str = os.getenv(
         "META_ACCESS_TOKEN", 
-        "EAApsPblu44oBSQpHzdxYMokvYqKZBjg3vHiOFJQCqOheURZAntu99nOfsKekukU55KIZAvkzDa2ZAXyqLJBG24jDqaIA07szmHEIPGKZAlyzCMLgQgZCa5a6ydMVSLjvBft6xZCZBrlq4ZA6qFvnarn3NgK5MmzKBoDxNwjoRg3uvRhoqovzMF9Ryl6lFTr8kBhSy3WFdVPxVTELLNOQO3mUcDZB59wuhetEGqVxg3CALN80Wn0lUsD9AB6mxi46wfZAWgqybTqQVM5OgKkPUfhVQUInwZDZD"
+        "EAApsPblu44oBSTlluhwdep293nZBZAZCnACRmZCZCBQgZBi93lBZBkm3QsGE3JNHxGPYysiASMkPZALpQFgpeaVM2dKMvJawsoSJceiKK06xVngektVEDt3HUZAZB1ZAHDrBxQuYSBTdbYrP56jr0FBNLy4mtpRkhiMXrI7MlDJCMBAwuXMDVKBm0C05EsGZAwI8k2N3yJL2al7pvoNx6yeKsNgZBwZCbKESZAmzihkw0OluUpmGN1bEQJXZAhTBGHOdhxgYH5bhShmyBP56cyStFguiFrg4"
     )
     
     # ID del número de teléfono desde el que Meta envía los WhatsApp
