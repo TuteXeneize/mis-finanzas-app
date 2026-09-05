@@ -79,6 +79,18 @@ def health_check():
     }
 
 
+@app.get("/debug-logs", tags=["Control"])
+def debug_logs():
+    import sqlite3
+    from app.core.config import settings
+    conn = sqlite3.connect(settings.SQLITE_DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT * FROM message_log ORDER BY id DESC LIMIT 5")
+    rows = c.fetchall()
+    conn.close()
+    return {"message_logs": rows}
+
+
 @app.post(
     "/procesar-transaccion",
     response_model=RespuestaAPI,
