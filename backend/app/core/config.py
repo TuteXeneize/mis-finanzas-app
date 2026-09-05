@@ -11,10 +11,13 @@ class Settings:
     META_VERIFY_TOKEN: str = os.getenv("META_VERIFY_TOKEN", "token_secreto_super_seguro_2026")
     
     # Token de Acceso Permanente generado en Meta Developers / Sistema
-    META_ACCESS_TOKEN: str = os.getenv("META_ACCESS_TOKEN", "")
+    META_ACCESS_TOKEN: str = os.getenv(
+        "META_ACCESS_TOKEN", 
+        "EAApsPblu44oBSQpHzdxYMokvYqKZBjg3vHiOFJQCqOheURZAntu99nOfsKekukU55KIZAvkzDa2ZAXyqLJBG24jDqaIA07szmHEIPGKZAlyzCMLgQgZCa5a6ydMVSLjvBft6xZCZBrlq4ZA6qFvnarn3NgK5MmzKBoDxNwjoRg3uvRhoqovzMF9Ryl6lFTr8kBhSy3WFdVPxVTELLNOQO3mUcDZB59wuhetEGqVxg3CALN80Wn0lUsD9AB6mxi46wfZAWgqybTqQVM5OgKkPUfhVQUInwZDZD"
+    )
     
     # ID del número de teléfono desde el que Meta envía los WhatsApp
-    META_PHONE_NUMBER_ID: str = os.getenv("META_PHONE_NUMBER_ID", "")
+    META_PHONE_NUMBER_ID: str = os.getenv("META_PHONE_NUMBER_ID", "1172805419258900")
     
     # Versión de la API de Meta Graph
     META_API_VERSION: str = os.getenv("META_API_VERSION", "v20.0")
