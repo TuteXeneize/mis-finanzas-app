@@ -32,7 +32,8 @@ final class SyncService: ObservableObject {
     @Published var feedbackSync: String? = nil
     
     private var baseURL: String {
-        UserDefaults.standard.string(forKey: "backend_base_url") ?? "http://192.168.1.38:8000"
+        let raw = UserDefaults.standard.string(forKey: "backend_base_url") ?? "http://192.168.1.38:8000"
+        return raw.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
     }
     
     func sincronizar(context: ModelContext, categoriasExistentes: [CategoriaUsuario]) async {
